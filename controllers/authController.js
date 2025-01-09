@@ -16,9 +16,6 @@ async function register(req, res, next) {
 
         console.log(`User Id : ${newUser.id}, Email : ${newUser.email}, registered Successfully`);
 
-        const token = jwt.sign({ id: newUser.id, role: newUser.role }, secretKey, { expiresIn: '1h' });
-        res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
-
         return res.status(201).json({ "sucsses": true });
 
     } catch (error) {
@@ -36,7 +33,7 @@ async function login(req, res, next) {
         const user = await userService.login(email, password);
 
         const token = jwt.sign({ id: user.id, role: user.role }, secretKey, { expiresIn: '1h' });
-        res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge, secure: false });
+        // res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge, secure: false });
 
         console.log(`User Id : ${user.id}, Email : ${user.email}, logedin Successfully`);
 

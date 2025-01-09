@@ -202,7 +202,7 @@ async function addMealTo(id, mealId, userId) {
     return await prisma.$transaction(transaction);
 }
 
-async function addMealsCountTo(id, meals) {
+async function addMealsCountTo(id, orderMeals) {
     id = parseInt(id);
     const order = await prisma.order.findUnique({
         where: {
@@ -217,14 +217,14 @@ async function addMealsCountTo(id, meals) {
     }
 
     let total = 0.0;
-
-    meals.forEach(async orderMeal => {
+    
+    await Promise.all(orderMeals.map(async om => {
         const updatedOrderMeal = await prisma.orderMeal.update({
             where: {
-                id: orderMeal.id
+                id: om.id
             },
             data: {
-                count: orderMeal.count
+                count: om.count
             },
             include: {
                 meal: {
@@ -234,23 +234,21 @@ async function addMealsCountTo(id, meals) {
                 }
             }
         })
-
-        total = total + (updatedOrderMeal.meal.price * updatedOrderMeal.count);
-    });
+        total += updatedOrderMeal.meal.price * updatedOrderMeal.count;
+    }));
 
     const updatedOrder = await prisma.order.update({
         where: {
             id
         },
         data: {
-            total,
+            total: total,
             status: "PENDING"
         }
     });
 
     return updatedOrder;
 }
-
 module.exports = {
     getAll,
     getOrderById,

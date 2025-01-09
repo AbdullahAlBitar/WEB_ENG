@@ -18,8 +18,7 @@ const authenticateJWT = (req, res, next) => {
         console.log(`${decoded.role}, ID: ${decoded.id}, is authorized`);
         
     } catch (error) {
-        //return res.status(403).json({ error: 'Invalid token' });
-        console.log("not logged in");
+        return res.status(403).json({ error: 'Invalid token' });
         
     } finally {
         next();

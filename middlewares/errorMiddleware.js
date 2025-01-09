@@ -24,7 +24,7 @@ async function handleError(err, res, req) {
   }
   console.log(error_message === ""? err : error_message);
   
-  res.status(400).json({ error: error_message, code: error_code });
+  return res.status(400).json({ error: error_message, code: error_code });
 
 }
 
