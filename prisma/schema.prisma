@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" 
+  url      = env("DATABASE_URL") 
+}
+
+enum Role {
+  CUSTOMER
+  CAPTAIN
+  MANAGER
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String
+  password     String
+  role         Role     @default(CUSTOMER)
+  orders       Order[]
+}
+
+model Order {
+  id           Int         @id @default(autoincrement())
+  userId       Int
+  total        Float
+  status       OrderStatus @default(TEMP)
+  dineIn       Boolean     @default(true)
+  notes        String?
+  user         User        @relation(fields: [userId], references: [id])
+  orderMeals   OrderMeal[]
+}
+
+model OrderMeal {
+  id           Int      @id @default(autoincrement())
+  orderId      Int
+  mealId       Int
+  count        Int      @default(1)
+  order        Order    @relation(fields: [orderId], references: [id])
+  meal         Meal     @relation(fields: [mealId], references: [id])
+}
+
+model Meal {
+  id           Int      @id @default(autoincrement())
+  photo        String
+  name         String
+  price        Float
+  status       MealStatus   @default(ACTIVE)
+  orderMeals   OrderMeal[]
+}
+
+enum MealStatus {
+  NOTACTIVE
+  ACTIVE
+  DELETED
+}
+
+enum OrderStatus {
+  TEMP
+  PENDING
+  ACCEPTED
+  REFUSED
+  PREPARING
+  READY
+  DONE
+}
