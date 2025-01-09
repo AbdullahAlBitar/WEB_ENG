@@ -26,6 +26,19 @@ const mealUpdate = Joi.object({
   status: Joi.string().valid(...Object.values(MealStatus)).optional()
 });
 
+const addMealToOrder = Joi.object({
+  mealId : Joi.number().required(),
+});
+
+const addOrderMealsCount = Joi.object({
+  orderMeals: Joi.array().items(
+    Joi.object({
+      id: Joi.number().required(),
+      count: Joi.number().required()
+    })
+  ).required()
+});
+
 // // key
 // const keySchema = Joi.object({
 //   email: Joi.string().email().required(),
@@ -181,5 +194,7 @@ module.exports = {
   signInSchema,
   signUpSchema,
   mealCreate,
-  mealUpdate
+  mealUpdate,
+  addMealToOrder,
+  addOrderMealsCount
 };

@@ -6,7 +6,7 @@ dotenv.config();
 const secretKey = process.env.JWT_SECRET;
 
 const authenticateJWT = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1] || req.body.jwt;  // Get token from headers
+    const token = req.headers.authorization?.split(' ')[1] || req.headers.jwt; 
 
     // if (!token) {
     //     return res.status(401).json({ error: 'Unauthorized' });

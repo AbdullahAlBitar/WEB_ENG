@@ -8,8 +8,8 @@ async function getAll() {
 async function getAllByUserId(id) {
     id = parseInt(id);
     return await prisma.order.findMany({
-        where:{
-            userId : id
+        where: {
+            userId: id
         }
     });
 }
@@ -17,16 +17,16 @@ async function getAllByUserId(id) {
 async function getOrderById(id) {
     id = parseInt(id);
     const order = await prisma.order.findUnique({
-        where:{
+        where: {
             id
         },
         include: {
-            orderMeals : {
+            orderMeals: {
                 select: {
                     id: true,
                     count: true,
                     meal: {
-                        select:{
+                        select: {
                             id: true,
                             name: true,
                             price: true,
@@ -51,17 +51,17 @@ async function getOrderByIdForUser(id, userId) {
     id = parseInt(id);
     userId = parseInt(userId);
     return await prisma.order.findUnique({
-        where:{
+        where: {
             id,
             userId
         },
         include: {
-            orderMeals : {
+            orderMeals: {
                 select: {
                     id: true,
                     count: true,
                     meal: {
-                        select:{
+                        select: {
                             id: true,
                             name: true,
                             price: true,
@@ -77,7 +77,7 @@ async function getOrderByIdForUser(id, userId) {
 async function create(userId) {
     userId = parseInt(userId);
     return await prisma.order.create({
-        data:{
+        data: {
             userId,
             total: 0,
         }
@@ -90,13 +90,13 @@ async function updateById(id, userId, total, dineIn) {
     total = parseFloat(total);
 
     return await prisma.order.update({
-        where:{
+        where: {
             id
         },
-        data:{
-            userId: userId? userId : undefined,
-            total: total? total : undefined,
-            dineIn: dineIn? dineIn : undefined
+        data: {
+            userId: userId ? userId : undefined,
+            total: total ? total : undefined,
+            dineIn: dineIn ? dineIn : undefined
         }
     })
 }
@@ -104,19 +104,25 @@ async function updateById(id, userId, total, dineIn) {
 async function deleteById(id) {
     id = parseInt(id);
     prisma.orderMeal.delete({
-        where:{
+        where: {
             orderId: id
         }
     })
     return await prisma.order.delete({
         id
     })
-    
+
 }
 
-async function addMealTo(id, mealId) {
-    if(id == null){
-        const newOrder = await prisma.order.create();
+async function addMealTo(id, mealId, userId) {
+    if (id == null) {
+        userId = parseInt(userId);
+        const newOrder = await prisma.order.create({
+            data: {
+                total: 0,
+                userId
+            }
+        });
         id = newOrder.id;
     }
     id = parseInt(id);
@@ -129,8 +135,8 @@ async function addMealTo(id, mealId) {
     });
 
     const meal = await prisma.meal.findUnique({
-        where : {
-            mealId
+        where: {
+            id: mealId
         }
     })
 
@@ -146,30 +152,54 @@ async function addMealTo(id, mealId) {
         throw error;
     }
 
-    const newOrderWithMeal = await prisma.$transaction(async (tx) => {
-        const newOrderMeal = await tx.orderMeal.create({
-            data: {
-                orderId: id,
-                mealId
-            }
-        });
-    
-        const updatedOrder = await tx.order.update({
-            where: {
-                id,
-            },
-            data: {
-                total: {
-                    increment: meal.price
-                },
-            },
-        });
-    
-        return newOrderWithMeal != null;
+    const orderMeal = await prisma.orderMeal.findFirst({
+        where:{
+            mealId,
+            orderId: id
+        }
     });
-    
 
-    return null;
+    let transaction = [];
+
+    if(!orderMeal){
+        transaction.push(
+            prisma.orderMeal.create({
+                data: {
+                    orderId: id,
+                    mealId,
+                    count: 1
+                }
+            })
+        );
+    }else {
+        transaction.push(
+            prisma.orderMeal.update({
+                where:{
+                    id: orderMeal.id
+                },
+                data: {
+                    count :{
+                        increment: 1
+                    }
+                }
+            })
+        );
+    }
+
+    transaction.push(
+        prisma.order.update({
+            where : {
+                id
+            },
+            data:{
+                total :{
+                    increment: meal.price
+                }
+            }
+        })
+    );
+
+    return await prisma.$transaction(transaction);
 }
 
 async function addMealsCountTo(id, meals) {
@@ -178,7 +208,47 @@ async function addMealsCountTo(id, meals) {
         where: {
             id
         }
-    })
+    });
+
+    if (!order) {
+        let error = new Error("Not Found");
+        error.meta = { code: "404", error: `Order not found, id: ${id}` };
+        throw error;
+    }
+
+    let total = 0.0;
+
+    meals.forEach(async orderMeal => {
+        const updatedOrderMeal = await prisma.orderMeal.update({
+            where: {
+                id: orderMeal.id
+            },
+            data: {
+                count: orderMeal.count
+            },
+            include: {
+                meal: {
+                    select: {
+                        price: true
+                    }
+                }
+            }
+        })
+
+        total = total + (updatedOrderMeal.meal.price * updatedOrderMeal.count);
+    });
+
+    const updatedOrder = await prisma.order.update({
+        where: {
+            id
+        },
+        data: {
+            total,
+            status: "PENDING"
+        }
+    });
+
+    return updatedOrder;
 }
 
 module.exports = {
@@ -189,5 +259,6 @@ module.exports = {
     create,
     updateById,
     deleteById,
-    addMealTo
+    addMealTo,
+    addMealsCountTo
 }

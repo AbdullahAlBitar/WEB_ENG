@@ -91,6 +91,42 @@ async function getByOrderId(orderId) {
 
 async function deleteById(id) {
     id = parseInt(id);
+
+    const orderMeal = await prisma.orderMeal.findUnique({
+        where: {
+            id
+        },
+        include:{
+            meal:{
+                select:{
+                    price : true
+                }
+            }
+        }
+    })
+
+    if(!orderMeal){
+        let error = new Error("Not Found");
+        error.meta = { code: "404", error: `orderMeal not found, id : ${id}`};
+        throw error;
+    }
+
+    const orders = await prisma.order.updateMany({
+        where:{
+            orderMeals : {
+                some:{
+                    id
+                }
+            }
+        },
+        data:{
+            total:{
+                decrement: (orderMeal.count * orderMeal.meal.price)
+            }
+        }
+    });
+    
+
     return await prisma.orderMeal.delete({
         where: {
             id
