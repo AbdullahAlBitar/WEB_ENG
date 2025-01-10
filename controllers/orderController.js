@@ -60,10 +60,24 @@ async function confirmOrder(req, res, next) {
     }
 }
 
+async function update(req, res, next) {
+    try {
+        const id = req.params.id;
+        const { status, dineIn, notes} = req.body;
+
+        const order = await orderService.updateById(id, status, dineIn, notes);
+
+        return res.status(200).json({order});
+    } catch (error) {
+        
+    }
+}
+
 module.exports = {
     index,
     show,
     showForUser,
     addMeal,
-    confirmOrder
+    confirmOrder,
+    update
 }

@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const {Role, MealStatus} = require('@prisma/client');
+const {Role, MealStatus, OrderStatus} = require('@prisma/client');
 
 
 const signInSchema = Joi.object({
@@ -37,6 +37,12 @@ const addOrderMealsCount = Joi.object({
       count: Joi.number().required()
     })
   ).required()
+});
+
+const updateOrderSchema = Joi.object({
+  status: Joi.string().valid(...Object.values(OrderStatus)).optional(),
+  dineIn: Joi.boolean().optional(),
+  notes: Joi.string().optional()
 });
 
 // // key
@@ -196,5 +202,6 @@ module.exports = {
   mealCreate,
   mealUpdate,
   addMealToOrder,
-  addOrderMealsCount
+  addOrderMealsCount,
+  updateOrderSchema
 };

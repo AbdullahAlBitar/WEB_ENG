@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const { parse } = require('dotenv');
 const prisma = new PrismaClient();
 
 async function getAll() {
@@ -84,18 +85,16 @@ async function create(userId) {
     });
 }
 
-async function updateById(id, userId, total, dineIn) {
+async function updateById(id, status, dineIn, notes) {
     id = parseInt(id);
-    userId = parseInt(userId);
-    total = parseFloat(total);
 
     return await prisma.order.update({
         where: {
             id
         },
         data: {
-            userId: userId ? userId : undefined,
-            total: total ? total : undefined,
+            status: status ? status : undefined,
+            notes: notes ? notes : undefined,
             dineIn: dineIn ? dineIn : undefined
         }
     })
