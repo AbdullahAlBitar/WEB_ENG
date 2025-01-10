@@ -83,8 +83,57 @@ async function create(name, email, password, role) {
     return user;
 }
 
+async function createUsers() {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash("1234", salt);
+    let users = [];
+
+    const Manager = await prisma.user.findUnique({
+        where:{
+            email: "Manager@test.com"
+        }
+    });
+
+    if(!Manager){
+        const newManager = await prisma.user.create({
+            data:{
+                name: "manager",
+                email: "Manager@test.com",
+                password: hashedPassword,
+                role: "MANAGER"
+            }
+        })
+        users.push(newManager)
+    }else{
+        users.push(Manager);
+    }
+
+    const Captain = await prisma.user.findUnique({
+        where: {
+            email: "Captain@test.com"
+        }
+    });
+
+    if (!Captain) {
+        const newCaptain = await prisma.user.create({
+            data: {
+                name: "captain",
+                email: "Captain@test.com",
+                password: hashedPassword,
+                role: "CAPTAIN"
+            }
+        })
+        users.push(newCaptain)
+    } else {
+        users.push(Captain);
+    }
+    
+    return users;
+}
+
 module.exports = {
     login,
     register,
-    create
+    create,
+    createUsers
 };

@@ -12,7 +12,8 @@ const authRoutes = require("./routes/authRoutes")
 const mealRoutes = require("./routes/mealRoutes")
 const orderMealRoutes = require("./routes/orderMealRoutes")
 const orderRoutes = require("./routes/orderRoutes")
-const userRoutes = require("./routes/userRoutes")
+const userRoutes = require("./routes/userRoutes");
+const { createUsers } = require('./services/userService');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -53,6 +54,9 @@ async function testDatabaseConnection() {
 async function startApp() {
   const isConnected = await testDatabaseConnection();
   if (isConnected) {
+    const users = await createUsers();
+    console.log(users);
+    
     app.listen(port, () => {
       console.log('Server listening on port ',port);
     });
