@@ -7,11 +7,11 @@ async function login(email, password) {
         where: {
             email
         },
-        select:{
+        select: {
             id: true,
             name: true,
             email: true,
-            role: true,
+            role: true
         }
     });
 
@@ -22,7 +22,10 @@ async function login(email, password) {
         throw error;
     }
 
-    if (await bcrypt.compare(password, user.password)) {
+    const fullUser = await prisma.user.findUnique({
+        where: { email }
+    });
+    if (await bcrypt.compare(password, fullUser.password)) {
         return user;
     } else {
         console.log(`${email} couldn't log in`);
@@ -58,7 +61,30 @@ async function register(email, name, password) {
     });
 }
 
+async function create(name, email, password, role) {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = await prisma.user.create({
+        data:{
+            email,
+            name,
+            password: hashedPassword,
+            role
+        },
+        select:{
+            id: true,
+            name: true,
+            email: true,
+            role: true
+        }
+    })
+
+    return user;
+}
+
 module.exports = {
     login,
-    register
+    register,
+    create
 };

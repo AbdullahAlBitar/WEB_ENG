@@ -12,6 +12,7 @@ const authRoutes = require("./routes/authRoutes")
 const mealRoutes = require("./routes/mealRoutes")
 const orderMealRoutes = require("./routes/orderMealRoutes")
 const orderRoutes = require("./routes/orderRoutes")
+const userRoutes = require("./routes/userRoutes")
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -21,6 +22,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
 app.use("/meals", mealRoutes);
 app.use("/orderMeals", orderMealRoutes);
 app.use(authenticateJWT);
