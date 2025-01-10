@@ -6,6 +6,12 @@ async function login(email, password) {
     const user = await prisma.user.findUnique({
         where: {
             email
+        },
+        select:{
+            id: true,
+            name: true,
+            email: true,
+            role: true,
         }
     });
 
