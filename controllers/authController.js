@@ -37,7 +37,7 @@ async function login(req, res, next) {
 
         console.log(`User Id : ${user.id}, Email : ${user.email}, logedin Successfully`);
 
-        return res.status(200).json({jwt : token, role : user.role});
+        return res.status(200).json({jwt : token, role : user.role, user: user});
 
     } catch (error) {
         next(error);
