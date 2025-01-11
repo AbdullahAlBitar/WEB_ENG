@@ -29,7 +29,7 @@ async function store(req, res, next) {
         }
         console.log(`Photo : ${req.file} \n recived`);
         
-        const photoUrl = await photoUploder.uploadToLocal(req.file, "meals_images", name);
+        const photoUrl = await photoUploder.uploadToLocal(req.file);
         console.log(`Photo uploaded to : ${photoUrl}`);
 
         const newMeal = await mealService.create(name, photoUrl, price);
@@ -48,7 +48,7 @@ async function update(req, res) {
         let photoUrl = null;
 
         if (req.file) {
-            photoUrl = await photoUploder.uploadToLocal(req.file, "meals_images", name);
+            photoUrl = await photoUploder.uploadToLocal(req.file);
             console.log(`Photo uploaded to : ${photoUrl}`);
         }
 
