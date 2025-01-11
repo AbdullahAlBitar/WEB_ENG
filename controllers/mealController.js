@@ -48,7 +48,7 @@ async function update(req, res) {
         let photoUrl = null;
 
         if (req.file) {
-            photoUrl = await photoUploder.uploadToGoogleDrive(req.file, "meals_images", name);
+            photoUrl = await photoUploder.uploadToLocal(req.file, "meals_images", name);
             console.log(`Photo uploaded to : ${photoUrl}`);
         }
 
