@@ -1,10 +1,21 @@
 const multer = require('multer');
+const path = require('path');
 const { google } = require('googleapis');
 
 const SCOPE = ['https://www.googleapis.com/auth/drive'];
 
-// Configure multer for file uploads
-const upload = multer({ dest: 'uploads/' });
+// Configure multer storage with custom filename and destination
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads/')
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, uniqueSuffix + path.extname(file.originalname))
+    }
+});
+
+const upload = multer({ storage: storage });
 
 // Updated authorize function to use env variables
 async function authorize() {
@@ -88,11 +99,18 @@ const uploadToGoogleDrive = async (file, subFolderName, name) => {
     require('fs').unlinkSync(file.path);
 
     // return response.data.webContentLink; // Public URL of the file
-    const publicLink = `https://drive.google.com/uc?id=${response.data.id}`;
+    const publicLink = `https://drive.google.com/uc?export=view&id=${response.data.id}`;
     return publicLink;
+};
+
+// Function to handle local file upload
+const uploadToLocal = async (file, subFolder, name) => {
+    // Return the public URL path for the uploaded file
+    return `/uploads/${file.filename}`;
 };
 
 module.exports = {
     upload,
+    uploadToLocal,
     uploadToGoogleDrive
 }

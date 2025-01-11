@@ -29,7 +29,7 @@ async function store(req, res, next) {
         }
         console.log(`Photo : ${req.file} \n recived`);
         
-        const photoUrl = await photoUploder.uploadToGoogleDrive(req.file, "meals_images", name);
+        const photoUrl = await photoUploder.uploadToLocal(req.file, "meals_images", name);
         console.log(`Photo uploaded to : ${photoUrl}`);
 
         const newMeal = await mealService.create(name, photoUrl, price);
