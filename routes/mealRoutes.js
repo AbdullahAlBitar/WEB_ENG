@@ -10,8 +10,8 @@ const authenticateJWT = require('../middlewares/authMiddleware');
 router.get('/', mealController.index);
 router.get('/:id', mealController.show);
 
-router.post('/', authenticateJWT, MANAGER, validate(mealUpdate), photoUploader.upload.single('photo'), mealController.store);
-router.patch('/:id', authenticateJWT, MANAGER, validate(mealCreate), photoUploader.upload.single('photo'), mealController.update);
+router.post('/', authenticateJWT, MANAGER, validate(mealCreate), photoUploader.upload.single('photo'), mealController.store);
+router.patch('/:id', authenticateJWT, MANAGER, validate(mealUpdate), photoUploader.upload.single('photo'), mealController.update);
 router.delete('/:id', authenticateJWT, MANAGER, mealController.destroy);
 
 module.exports = router;
